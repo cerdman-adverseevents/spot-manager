@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:task="http://www.springframework.org/schema/task"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:annotation-config/>
+
+    <bean id="credentialsProvider" class="com.amazonaws.auth.ClasspathPropertiesFileCredentialsProvider">
+        <constructor-arg value="AwsCredentials.properties"/>
+    </bean>
+
+    <bean id="ec2Client" class="com.amazonaws.services.ec2.AmazonEC2Client">
+        <constructor-arg ref="credentialsProvider"/>
+        <property name="endpoint" value="ec2.us-west-2.amazonaws.com"/>
+    </bean>
+
+    <bean id="loadBalancingClient" class="com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingClient">
+        <constructor-arg ref="credentialsProvider"/>
+        <property name="endpoint" value="elasticloadbalancing.us-west-2.amazonaws.com"/>
+    </bean>
+
+    <bean id="spotInstanceMonitor" class="edu.uccs.cs.cs5050.spotmarket.SpotInstanceMonitor"/>
+
+    <task:scheduled-tasks scheduler="scheduler">
+        <task:scheduled ref="spotInstanceMonitor" method="monitor" fixed-delay="5000"/>
+    </task:scheduled-tasks>
+
+    <task:scheduler id="scheduler"/>
+</beans>
